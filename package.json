@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "jest": {
+    "setupFilesAfterEnv": ["jest-sorted"]
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "npx nodemon --experimental-fetch server.js"
   },
   "keywords": [],
@@ -13,5 +16,9 @@
   "dependencies": {
     "express": "^4.17.3",
     "nodemon": "^2.0.15"
+  },
+  "devDependencies": {
+    "jest": "^27.5.1",
+    "jest-sorted": "^1.0.14"
   }
 }
