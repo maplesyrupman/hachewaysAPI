@@ -4,7 +4,9 @@
   "description": "",
   "main": "server.js",
   "jest": {
-    "setupFilesAfterEnv": ["jest-sorted"]
+    "setupFilesAfterEnv": [
+      "jest-sorted"
+    ]
   },
   "scripts": {
     "test": "jest",
@@ -15,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.3",
+    "node-cache": "^5.1.2",
     "nodemon": "^2.0.15"
   },
   "devDependencies": {

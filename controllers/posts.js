@@ -1,8 +1,20 @@
-const { set } = require('lodash')
 const mergeSort = require('../helpers/mergeSort')
+const cache = require('../helpers/serverCache')
+
+async function fetchTags(tagArr) {
+    const apiUrl = 'https://api.hatchways.io/assessment/blog/posts'
+    const requests = tagArr.map(tag => fetch(apiUrl + tag))
+
+    try {
+        const rawResults = await Promise.all(requests)
+        const results = await Promise.all(rawResults.map(async (result) => await result.json()))
+        return results
+    } catch (err) {
+        return err
+    }
+}
 
 async function getPosts(req, res) {
-    const apiUrl = 'https://api.hatchways.io/assessment/blog/posts'
     let { tags, sortBy, direction } = req.query
 
     const errMsg =
@@ -16,28 +28,42 @@ async function getPosts(req, res) {
         return
     }
 
-    tags = tags.split(',').map(tag => `?tag=${tag}`)
-    let postMap = {}
+    tags = tags.split(',')
+    const tagsInCache = []
+    const tagsToFetch = []
 
-    const requests = tags.map(tag => fetch(apiUrl + tag))
+    for (let i=0;i<tags.length;i++) {
+        if (cache.hasTag(tags[i])) {
+            tagsInCache.push(tags[i])
+        } else {
+            tagsToFetch.push(tags[i])
+        }
+    }
+
+    const postMap = {}
+    const tagQueryStrings = tagsToFetch.map(tag => `?tag=${tag}`)
+
 
     try {
-        let results = await Promise.all(requests)
-        for (let i = 0; i < results.length; i++) {
-            const jsonPosts = await results[i].json()
-            for (let j=0;j<jsonPosts.posts.length;j++) {
-                const post = jsonPosts.posts[j]
-                console.log(post.id)
+        const fetchedPosts = await fetchTags(tagQueryStrings, res)
+        
+
+        for (let i=0;i<fetchedPosts.length; i++) {
+            const posts = fetchedPosts[i].posts
+            for (let e=0;e<posts.length; e++) {
+                const post = posts[e]
+                cache.addPost(post)
                 postMap[post.id] = post
-                console.log(postMap)
             }
         }
+
+        const sortedPosts = mergeSort(Object.values(postMap), sortBy, direction)
+        return res.status(200).json({ posts: sortedPosts })
+
     } catch (err) {
-        return res.status(500).json({ err: String(err) })
+        console.log(err)
+        res.status(500).json({error: err})
     }
-    const sortedPosts = mergeSort(Object.values(postMap), sortBy, direction)
-    console.log(sortedPosts.length)
-    return res.status(200).json({ posts: sortedPosts })
 }
 
 module.exports = { getPosts }
