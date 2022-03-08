@@ -1,6 +1,6 @@
 const mergeSort = require('../helpers/mergeSort')
 const cache = require('../helpers/serverCache')
-const fetchTags = require('../helpers/fetchTags')
+const fetchPostsByTags = require('../helpers/fetchTags')
 
 async function getPosts(req, res) {
     let { tags, sortBy, direction } = req.query
@@ -12,8 +12,7 @@ async function getPosts(req, res) {
                     false
 
     if (errMsg) {
-        res.status(400).json({ error: errMsg })
-        return
+        return res.status(400).json({ error: errMsg })
     }
 
     tags = tags.split(',')
@@ -29,22 +28,17 @@ async function getPosts(req, res) {
     }
 
     const postMap = {}
-
     cache.getPostsByTags(tagsInCache).forEach(post => postMap[post.id] = post)
 
     try {
         const tagQueryStrings = tagsToFetch.map(tag => `?tag=${tag}`)
-        const fetchedPosts = await fetchTags(tagQueryStrings, res)
+        const fetchedPosts = await fetchPostsByTags(tagQueryStrings)
         
-
-        for (let i=0;i<fetchedPosts.length; i++) {
-            const posts = fetchedPosts[i].posts
-            for (let e=0;e<posts.length; e++) {
-                const post = posts[e]
-                cache.addPost(post)
-                postMap[post.id] = post
-            }
-        }
+        fetchedPosts.forEach(post => {
+            cache.addPost(post)
+            postMap[post.id] = post
+        })
+        
         cache.addTags(tagsToFetch)
         const sortedPosts = mergeSort(Object.values(postMap), sortBy, direction)
         return res.status(200).json({ posts: sortedPosts })

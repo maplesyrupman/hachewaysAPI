@@ -12,6 +12,5 @@ test('sorts unsorted array, asc', () => {
 
 test('sorts unsorted array, desc', () => {
     const sortedArray = mergeSort(unsortedArr, 'this', 'desc')
-    console.log(sortedArray)
     expect(sortedArray).toBeSortedBy('this', {descending: true})
 })
