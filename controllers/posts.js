@@ -1,18 +1,6 @@
 const mergeSort = require('../helpers/mergeSort')
 const cache = require('../helpers/serverCache')
-
-async function fetchTags(tagArr) {
-    const apiUrl = 'https://api.hatchways.io/assessment/blog/posts'
-    const requests = tagArr.map(tag => fetch(apiUrl + tag))
-
-    try {
-        const rawResults = await Promise.all(requests)
-        const results = await Promise.all(rawResults.map(async (result) => await result.json()))
-        return results
-    } catch (err) {
-        return err
-    }
-}
+const fetchTags = require('../helpers/fetchTags')
 
 async function getPosts(req, res) {
     let { tags, sortBy, direction } = req.query
@@ -41,10 +29,11 @@ async function getPosts(req, res) {
     }
 
     const postMap = {}
-    const tagQueryStrings = tagsToFetch.map(tag => `?tag=${tag}`)
 
+    cache.getPostsByTags(tagsInCache).forEach(post => postMap[post.id] = post)
 
     try {
+        const tagQueryStrings = tagsToFetch.map(tag => `?tag=${tag}`)
         const fetchedPosts = await fetchTags(tagQueryStrings, res)
         
 
@@ -56,12 +45,11 @@ async function getPosts(req, res) {
                 postMap[post.id] = post
             }
         }
-
+        cache.addTags(tagsToFetch)
         const sortedPosts = mergeSort(Object.values(postMap), sortBy, direction)
         return res.status(200).json({ posts: sortedPosts })
 
     } catch (err) {
-        console.log(err)
         res.status(500).json({error: err})
     }
 }

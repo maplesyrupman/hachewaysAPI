@@ -21,6 +21,15 @@ describe('cache can store and retrieve posts and tags', () => {
         expect(cache.hasTag(tag)).toBe(true)
     })
 
+    test('stores multiple tags in cache', () => {
+        const tags = ['tag1', 'tag2', 'tag3']
+        cache.addTags(tags)
+        
+        expect(cache.hasTag('tag1')).toBe(true)
+        expect(cache.hasTag('tag2')).toBe(true)
+        expect(cache.hasTag('tag3')).toBe(true)
+    })
+
     test('gets posts with certain tag from cache', () => {
         const posts = [
             { id:1, tags: ['tag1', 'tag2', 'tag3']},

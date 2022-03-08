@@ -40,12 +40,21 @@ const cache = (() => {
         myCache.set('tags', tags)
     }
 
+    function addTags(tagsArr) {
+        const tags = myCache.get('tags')
+        for (let i=0;i<tagsArr.length;i++) {
+            tags.add(tagsArr[i])
+        }
+        myCache.set('tags', tags)
+    }
+
     return {
         getAllPosts,
         getPost,
         addPost,
         hasTag,
         addTag,
+        addTags,
         getPostsByTags
     }
 })()
