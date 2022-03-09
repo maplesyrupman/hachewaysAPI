@@ -1,6 +1,8 @@
 # Hatchways API
 A RESTful API written as part of an assignment given by [hatchways.io](hatchways.io). 
 
+![application screenshot](./postman-screenshot.png)
+
 ## Description
 This API accesses an external blog post API provided by hatchways.io and sorts the results by either id, popularity, likes, or reads in decending or ascending order. API results are also cached on the server to reduce network resource expendature and increase response time. Although the API has only two endpoints (/ping and /posts), it has been structured in such a way that supports futher development by organizing the code for clarity and ease of testing. Tests have been written using the Jest testing framework. 
 
